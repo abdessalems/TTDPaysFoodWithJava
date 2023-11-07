@@ -36,7 +36,12 @@ public class PopularFood {
 
     }
 
-
+    public PopularFood(String name, String description, String imageUrl, Country country) {
+        this.name = name;
+        this.description = description;
+        this.imageUrl = imageUrl;
+        this.country = country;
+    }
 
     public Long getId() {
         return id;
