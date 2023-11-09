@@ -1,5 +1,7 @@
 package saadaoui.ttdpaysfoodwithjava;
 
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -9,123 +11,165 @@ import saadaoui.ttdpaysfoodwithjava.repos.CountryRepository;
 import saadaoui.ttdpaysfoodwithjava.repos.PopularFoodRepository;
 
 import java.util.List;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 class TtdPaysFoodWithJavaApplicationTests {
 
-	@Autowired
-	private CountryRepository countryRepository;
+    @Autowired
+    private CountryRepository countryRepository;
 
-	@Autowired
-	private PopularFoodRepository popularFoodRepository;
+    @Autowired
+    private PopularFoodRepository popularFoodRepository;
 
+    @BeforeEach
+    void setUp() {
+        // Insert real or sample countries into the database
+        Country country1 = new Country("United States");
+        Country country2 = new Country("Canada");
+        Country country3 = new Country("Germany");
 
+        // Save entities to the database
+        countryRepository.saveAll(List.of(country1, country2, country3));
 
-	@Test
-	public void testCreatePopularFoodWithCountryy() {
-		// Create a new Country
-		Country france = new Country("France", "Europe");
-		countryRepository.save(france);
+        PopularFood food1 = new PopularFood("Burger");
+        PopularFood food2 = new PopularFood("Poutine");
+        PopularFood food3 = new PopularFood("Bratwurst");
 
-		// Create a new PopularFood associated with France
-		PopularFood croissant = new PopularFood("Croissant", "A delicious French pastry", "croissant.jpg");
-		croissant.setCountry(france);
-		popularFoodRepository.save(croissant);
+        // Save entities to the database
+        popularFoodRepository.saveAll(List.of(food1, food2, food3));
 
-		// Assertions for the first PopularFood
-		assertNotNull(croissant.getId());
-		assertEquals("France", croissant.getCountry().getName());
-
-		// Create another Country
-		Country italy = new Country("Italy", "Europe");
-		countryRepository.save(italy);
-
-		// Create a new PopularFood associated with Italy
-		PopularFood pizza = new PopularFood("Pizza", "Classic Italian dish", "pizza.jpg");
-		pizza.setCountry(italy);
-		popularFoodRepository.save(pizza);
-
-		// Assertions for the second PopularFood
-		assertNotNull(pizza.getId());
-		assertEquals("Italy", pizza.getCountry().getName());
-
-		// Create more countries and popular foods as needed
-	}
+    }
 
 
-	@Test
-	public void testCreatePopularFoodWithCountry() {
-		// Create a new Country and save it
-		Country country = new Country("France", "Europe");
-		countryRepository.save(country);
 
-		// Create a new PopularFood associated with the Country
-		PopularFood popularFood = new PopularFood("Baguette", "A French staple", "baguette.jpg");
-		popularFood.setCountry(country);
+    @Test
+    @Transactional
+    void testCreateCountry() {
+        Country country = new Country("France", "Europe");
+        countryRepository.save(country);
 
-		// Save the PopularFood entity
-		popularFoodRepository.save(popularFood);
+        assertNotNull(country.getId());
+    }
 
-		// Make assertions or print statements to verify the data was saved correctly
-		assertNotNull(popularFood.getId());
-		assertEquals("France", popularFood.getCountry().getName());
-	}
+    @Test
+    @Transactional
+    void testFindCountry() {
+        Country country = new Country("Germany", "Europe");
+        countryRepository.save(country);
+
+        Country retrievedCountry = countryRepository.findById(country.getId()).orElse(null);
+        assertNotNull(retrievedCountry);
+        assertEquals("Germany", retrievedCountry.getName());
+    }
+
+    @Test
+    @Transactional
+    void testUpdateCountry() {
+        Country country = new Country("Spain", "Europe");
+        countryRepository.save(country);
+
+        country.setName("UpdatedSpain");
+        countryRepository.save(country);
+
+        Optional<Country> updatedCountry = countryRepository.findById(country.getId());
+        assertTrue(updatedCountry.isPresent());
+        assertEquals("UpdatedSpain", updatedCountry.get().getName());
+    }
+
+    @Test
+    @Transactional
+    void testDeleteCountry() {
+        Country country = new Country("Italy", "Europe");
+        countryRepository.save(country);
+
+        countryRepository.deleteById(country.getId());
+
+        Optional<Country> deletedCountry = countryRepository.findById(country.getId());
+        assertFalse(deletedCountry.isPresent());
+    }
 
 
-	@Test
-	public void testCreatePopularFoodWithAsianCountry() {
-		// Create a new Country for an Asian country
-		Country japan = new Country("Japan", "Asia");
-		countryRepository.save(japan);
 
-		// Create a new PopularFood associated with Japan
-		PopularFood sushi = new PopularFood("Sushi", "Traditional Japanese cuisine", "sushi.jpg");
-		sushi.setCountry(japan);
-		popularFoodRepository.save(sushi);
+    @Test
+    @Transactional
+    void testCreatePopularFood() {
+        Country country = new Country("Japan", "Asia");
+        countryRepository.save(country);
 
-		// Assertions for the PopularFood associated with Japan
-		assertNotNull(sushi.getId());
-		assertEquals("Japan", sushi.getCountry().getName());
+        PopularFood popularFood = new PopularFood("Sushi", "Traditional Japanese Dish", "sushi.jpg");
+        popularFood.setCountry(country);
+        popularFoodRepository.save(popularFood);
 
-	}
+        assertNotNull(popularFood.getId());
+    }
+
+    @Test
+    @Transactional
+    void testFindPopularFood() {
+        Country country = new Country("China", "Asia");
+        countryRepository.save(country);
+
+        PopularFood popularFood = new PopularFood("Dim Sum", "Chinese Dumplings", "dimsum.jpg");
+        popularFood.setCountry(country);
+        popularFoodRepository.save(popularFood);
+
+        Optional<PopularFood> retrievedPopularFood = popularFoodRepository.findById(popularFood.getId());
+        assertTrue(retrievedPopularFood.isPresent());
+        assertEquals("Dim Sum", retrievedPopularFood.get().getName());
+    }
+
+    @Test
+    @Transactional
+    void testUpdatePopularFood() {
+        Country country = new Country("India", "Asia");
+        countryRepository.save(country);
+
+        PopularFood popularFood = new PopularFood("Curry", "Spicy Indian Dish", "curry.jpg");
+        popularFood.setCountry(country);
+        popularFoodRepository.save(popularFood);
+
+        popularFood.setName("UpdatedCurry");
+        popularFoodRepository.save(popularFood);
+
+        Optional<PopularFood> updatedPopularFood = popularFoodRepository.findById(popularFood.getId());
+        assertTrue(updatedPopularFood.isPresent());
+        assertEquals("UpdatedCurry", updatedPopularFood.get().getName());
+    }
+
+    @Test
+    @Transactional
+    void testDeletePopularFood() {
+        Country country = new Country("Thailand", "Asia");
+        countryRepository.save(country);
+
+        PopularFood popularFood = new PopularFood("Pad Thai", "Thai Noodles", "padthai.jpg");
+        popularFood.setCountry(country);
+        popularFoodRepository.save(popularFood);
+
+        popularFoodRepository.deleteById(popularFood.getId());
+
+        Optional<PopularFood> deletedPopularFood = popularFoodRepository.findById(popularFood.getId());
+        assertFalse(deletedPopularFood.isPresent());
+    }
+
+    @Test
+    @Transactional
+    void testListAllCountries() {
+        List<Country> countries = countryRepository.findAll();
+        assertFalse(countries.isEmpty(), "List of countries is empty. Actual values: " + countries);
+    }
+
+    @Test
+    @Transactional
+    void testListAllPopularFoods() {
+        List<PopularFood> popularFoods = popularFoodRepository.findAll();
+        assertFalse(popularFoods.isEmpty(), "List of popular foods is empty. Actual values: " + popularFoods);
+    }
 
 
-	@Test
-	public void testCreatePopularFood() {
-		PopularFood newFood = new PopularFood("Hamburger", "American dish", "hamburger.jpg");
-		PopularFood savedFood = popularFoodRepository.save(newFood);
-		System.out.println("Created PopularFood: " + savedFood);
-	}
 
-	@Test
-	public void testFindPopularFood() {
-		PopularFood food = popularFoodRepository.findById(1L).get();
-		System.out.println("Found PopularFood: " + food);
-	}
-
-	@Test
-	public void testUpdatePopularFood() {
-		PopularFood food = popularFoodRepository.findById(1L).get();
-		food.setDescription("Updated description");
-		PopularFood updatedFood = popularFoodRepository.save(food);
-		System.out.println("Updated PopularFood: " + updatedFood);
-	}
-
-	@Test
-	public void testDeletePopularFood() {
-		popularFoodRepository.deleteById(1L);
-		System.out.println("Deleted PopularFood with ID 1");
-	}
-
-	@Test
-	public void testListAllPopularFoods() {
-		Iterable<PopularFood> foods = popularFoodRepository.findAll();
-		for (PopularFood food : foods) {
-			System.out.println("PopularFood: " + food);
-		}
-	}
 
 }

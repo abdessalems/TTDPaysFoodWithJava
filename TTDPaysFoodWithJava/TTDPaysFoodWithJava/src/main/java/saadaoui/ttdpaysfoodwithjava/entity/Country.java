@@ -1,9 +1,10 @@
 package saadaoui.ttdpaysfoodwithjava.entity;
 
-
 import jakarta.persistence.*;
+import saadaoui.ttdpaysfoodwithjava.entity.PopularFood;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 public class Country {
@@ -12,12 +13,15 @@ public class Country {
     private Long id;
     private String name;
     private String continent;
-    @OneToMany(mappedBy = "country", cascade = CascadeType.ALL)
+
+    @OneToMany(mappedBy = "country", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     private List<PopularFood> popularFoods;
+
     public Country() {
     }
 
-    public Country(String name, String continent, List<PopularFood> popularFoods) {
+    public Country(Long id, String name, String continent, List<PopularFood> popularFoods) {
+        this.id = id;
         this.name = name;
         this.continent = continent;
         this.popularFoods = popularFoods;
@@ -27,7 +31,19 @@ public class Country {
         this.name = name;
         this.continent = continent;
     }
-// Getters and setters
+
+
+    public Country(String name) {
+        this.name = name;
+    }
+
+    public List<PopularFood> getPopularFoods() {
+        return popularFoods;
+    }
+
+    public void setPopularFoods(List<PopularFood> popularFoods) {
+        this.popularFoods = popularFoods;
+    }
 
     public Long getId() {
         return id;
@@ -53,11 +69,16 @@ public class Country {
         this.continent = continent;
     }
 
-    public List<PopularFood> getPopularFoods() {
-        return popularFoods;
-    }
+    // Other methods and overrides
 
-    public void setPopularFoods(List<PopularFood> popularFoods) {
-        this.popularFoods = popularFoods;
+    @Override
+    public String toString() {
+        return "Country{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", continent='" + continent + '\'' +
+                ", popularFoods=" + popularFoods +
+                '}';
     }
 }
+

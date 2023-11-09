@@ -1,11 +1,13 @@
 package saadaoui.ttdpaysfoodwithjava.entity;
 
-
 import jakarta.persistence.*;
 
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 public class PopularFood {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -17,12 +19,8 @@ public class PopularFood {
     @JoinColumn(name = "country_id")
     private Country country;
 
-    public PopularFood(Long id, String name, String description, String imageUrl, Country country) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.imageUrl = imageUrl;
-        this.country = country;
+
+    public PopularFood() {
     }
 
     public PopularFood(String name, String description, String imageUrl) {
@@ -31,16 +29,8 @@ public class PopularFood {
         this.imageUrl = imageUrl;
     }
 
-
-    public PopularFood() {
-
-    }
-
-    public PopularFood(String name, String description, String imageUrl, Country country) {
+    public PopularFood(String name) {
         this.name = name;
-        this.description = description;
-        this.imageUrl = imageUrl;
-        this.country = country;
     }
 
     public Long getId() {
@@ -74,6 +64,7 @@ public class PopularFood {
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
+    // Other constructors, getters, setters, and methods
 
     public Country getCountry() {
         return country;
@@ -82,4 +73,18 @@ public class PopularFood {
     public void setCountry(Country country) {
         this.country = country;
     }
+
+    // Other methods and overrides
+
+    @Override
+    public String toString() {
+        return "PopularFood{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", imageUrl='" + imageUrl + '\'' +
+                ", country=" + country +
+                '}';
+    }
 }
+

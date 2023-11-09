@@ -8,5 +8,4 @@ import java.util.List;
 
 public interface PopularFoodRepository extends JpaRepository<PopularFood, Long> {
 
-    List<PopularFood> findByCountry(Country country);
 }
