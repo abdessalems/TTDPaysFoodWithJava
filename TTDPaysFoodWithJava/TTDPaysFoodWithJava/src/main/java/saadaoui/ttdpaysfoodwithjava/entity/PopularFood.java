@@ -1,5 +1,6 @@
 package saadaoui.ttdpaysfoodwithjava.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
@@ -17,6 +18,7 @@ public class PopularFood {
 
     @ManyToOne
     @JoinColumn(name = "country_id")
+    @JsonIgnore
     private Country country;
 
 
@@ -27,6 +29,12 @@ public class PopularFood {
         this.name = name;
         this.description = description;
         this.imageUrl = imageUrl;
+    }
+
+    public PopularFood(String name, String description, Country country) {
+        this.name = name;
+        this.description = description;
+        this.country = country;
     }
 
     public PopularFood(String name) {
@@ -64,7 +72,6 @@ public class PopularFood {
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
-    // Other constructors, getters, setters, and methods
 
     public Country getCountry() {
         return country;
@@ -74,7 +81,6 @@ public class PopularFood {
         this.country = country;
     }
 
-    // Other methods and overrides
 
     @Override
     public String toString() {

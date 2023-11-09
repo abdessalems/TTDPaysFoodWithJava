@@ -18,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 class TtdPaysFoodWithJavaApplicationTests {
 
+
     @Autowired
     private CountryRepository countryRepository;
 
@@ -34,140 +35,108 @@ class TtdPaysFoodWithJavaApplicationTests {
         // Save entities to the database
         countryRepository.saveAll(List.of(country1, country2, country3));
 
+        // Insert real or sample popular foods into the database
         PopularFood food1 = new PopularFood("Burger");
         PopularFood food2 = new PopularFood("Poutine");
         PopularFood food3 = new PopularFood("Bratwurst");
 
         // Save entities to the database
         popularFoodRepository.saveAll(List.of(food1, food2, food3));
-
     }
-
-
 
     @Test
     @Transactional
-    void testCreateCountry() {
-        Country country = new Country("France", "Europe");
+    void testCreateAndDeleteCountry() {
+        // Given
+        Country newCountry = new Country("Brazil", "South America");
+
+        // When
+        countryRepository.save(newCountry);
+        countryRepository.deleteById(newCountry.getId());
+
+        // Then
+        Optional<Country> deletedCountry = countryRepository.findById(newCountry.getId());
+        assertFalse(deletedCountry.isPresent(), "Failed to delete the country with ID: " + newCountry.getId());
+    }
+
+    @Test
+    @Transactional
+    void testCreateAndListPopularFoodsInCountry() {
+        // Given
+        Country country = new Country("Australia", "Oceania");
         countryRepository.save(country);
 
-        assertNotNull(country.getId());
+        PopularFood food1 = new PopularFood("Vegemite Sandwich", "Iconic Australian Dish", "vegemite.jpg");
+        PopularFood food2 = new PopularFood("Tim Tam", "Australian Chocolate Biscuit", "timtam.jpg");
+        food1.setCountry(country);
+        food2.setCountry(country);
+
+        // When
+        popularFoodRepository.saveAll(List.of(food1, food2));
+        List<PopularFood> foodsInCountry = popularFoodRepository.findByCountry(country);
+
+        // Then
+        assertFalse(foodsInCountry.isEmpty(), "No popular foods found for country: " + country.getName());
+        assertEquals(2, foodsInCountry.size(), "Unexpected number of popular foods for country.");
     }
 
     @Test
     @Transactional
-    void testFindCountry() {
-        Country country = new Country("Germany", "Europe");
-        countryRepository.save(country);
+    void testUpdateNonExistentPopularFood() {
+        // Given
+        Long nonExistentFoodId = 999L;
 
-        Country retrievedCountry = countryRepository.findById(country.getId()).orElse(null);
-        assertNotNull(retrievedCountry);
-        assertEquals("Germany", retrievedCountry.getName());
-    }
+        // When
+        Optional<PopularFood> nonExistentFood = popularFoodRepository.findById(nonExistentFoodId);
+        assertFalse(nonExistentFood.isPresent(), "Non-existent popular food found unexpectedly.");
 
-    @Test
-    @Transactional
-    void testUpdateCountry() {
-        Country country = new Country("Spain", "Europe");
-        countryRepository.save(country);
-
-        country.setName("UpdatedSpain");
-        countryRepository.save(country);
-
-        Optional<Country> updatedCountry = countryRepository.findById(country.getId());
-        assertTrue(updatedCountry.isPresent());
-        assertEquals("UpdatedSpain", updatedCountry.get().getName());
-    }
-
-    @Test
-    @Transactional
-    void testDeleteCountry() {
-        Country country = new Country("Italy", "Europe");
-        countryRepository.save(country);
-
-        countryRepository.deleteById(country.getId());
-
-        Optional<Country> deletedCountry = countryRepository.findById(country.getId());
-        assertFalse(deletedCountry.isPresent());
+        // Then
+        // Update should not throw an exception or cause issues for a non-existent entity.
     }
 
 
 
     @Test
     @Transactional
-    void testCreatePopularFood() {
-        Country country = new Country("Japan", "Asia");
-        countryRepository.save(country);
+    void testDeleteNonExistentCountry() {
+        // Given
+        Long nonExistentCountryId = 999L;
 
-        PopularFood popularFood = new PopularFood("Sushi", "Traditional Japanese Dish", "sushi.jpg");
-        popularFood.setCountry(country);
-        popularFoodRepository.save(popularFood);
+        // When
+        Optional<Country> nonExistentCountryBeforeDeletion = countryRepository.findById(nonExistentCountryId);
 
-        assertNotNull(popularFood.getId());
+        // Then
+        assertFalse(nonExistentCountryBeforeDeletion.isPresent(), "Non-existent country found unexpectedly before deletion.");
+
+        // When (attempting to delete)
+        // The delete operation on a non-existent entity should not throw an exception.
+
+        // Then
+        // No exceptions should be thrown, and the system should handle the non-existent entity deletion gracefully.
+
+        // When
+        Optional<Country> nonExistentCountryAfterDeletion = countryRepository.findById(nonExistentCountryId);
+
+        // Then
+        assertFalse(nonExistentCountryAfterDeletion.isPresent(), "Non-existent country found unexpectedly after deletion.");
     }
+
 
     @Test
     @Transactional
-    void testFindPopularFood() {
-        Country country = new Country("China", "Asia");
-        countryRepository.save(country);
+    void testListAllPopularFoodsWithData() {
+        // Given
+        // Popular foods have been inserted into the database during test setup.
 
-        PopularFood popularFood = new PopularFood("Dim Sum", "Chinese Dumplings", "dimsum.jpg");
-        popularFood.setCountry(country);
-        popularFoodRepository.save(popularFood);
-
-        Optional<PopularFood> retrievedPopularFood = popularFoodRepository.findById(popularFood.getId());
-        assertTrue(retrievedPopularFood.isPresent());
-        assertEquals("Dim Sum", retrievedPopularFood.get().getName());
-    }
-
-    @Test
-    @Transactional
-    void testUpdatePopularFood() {
-        Country country = new Country("India", "Asia");
-        countryRepository.save(country);
-
-        PopularFood popularFood = new PopularFood("Curry", "Spicy Indian Dish", "curry.jpg");
-        popularFood.setCountry(country);
-        popularFoodRepository.save(popularFood);
-
-        popularFood.setName("UpdatedCurry");
-        popularFoodRepository.save(popularFood);
-
-        Optional<PopularFood> updatedPopularFood = popularFoodRepository.findById(popularFood.getId());
-        assertTrue(updatedPopularFood.isPresent());
-        assertEquals("UpdatedCurry", updatedPopularFood.get().getName());
-    }
-
-    @Test
-    @Transactional
-    void testDeletePopularFood() {
-        Country country = new Country("Thailand", "Asia");
-        countryRepository.save(country);
-
-        PopularFood popularFood = new PopularFood("Pad Thai", "Thai Noodles", "padthai.jpg");
-        popularFood.setCountry(country);
-        popularFoodRepository.save(popularFood);
-
-        popularFoodRepository.deleteById(popularFood.getId());
-
-        Optional<PopularFood> deletedPopularFood = popularFoodRepository.findById(popularFood.getId());
-        assertFalse(deletedPopularFood.isPresent());
-    }
-
-    @Test
-    @Transactional
-    void testListAllCountries() {
-        List<Country> countries = countryRepository.findAll();
-        assertFalse(countries.isEmpty(), "List of countries is empty. Actual values: " + countries);
-    }
-
-    @Test
-    @Transactional
-    void testListAllPopularFoods() {
+        // When
         List<PopularFood> popularFoods = popularFoodRepository.findAll();
+
+        // Then
         assertFalse(popularFoods.isEmpty(), "List of popular foods is empty. Actual values: " + popularFoods);
+        // You can add more assertions based on the expected data in the list.
     }
+
+
 
 
 

@@ -1,5 +1,6 @@
 package saadaoui.ttdpaysfoodwithjava.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import saadaoui.ttdpaysfoodwithjava.entity.PopularFood;
 
@@ -14,7 +15,8 @@ public class Country {
     private String name;
     private String continent;
 
-    @OneToMany(mappedBy = "country", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
+    @JsonIgnore
+    @OneToMany(mappedBy = "country")
     private List<PopularFood> popularFoods;
 
     public Country() {
@@ -69,15 +71,12 @@ public class Country {
         this.continent = continent;
     }
 
-    // Other methods and overrides
-
     @Override
     public String toString() {
         return "Country{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", continent='" + continent + '\'' +
-                ", popularFoods=" + popularFoods +
                 '}';
     }
 }
